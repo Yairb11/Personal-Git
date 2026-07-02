@@ -25,7 +25,7 @@ class BashWindow(QMainWindow):
         self.browser_window = None
         self.main_input_widget = None
         self.command_text_lines = None
-        self.thread  = None
+        self.thread = None
         self.pointer_index = 0
 
         self.setWindowTitle("Personal-Git")
@@ -98,18 +98,22 @@ class BashWindow(QMainWindow):
         if event.type() == QEvent.Type.MouseButtonPress:
             if event.button() == Qt.MouseButton.LeftButton:
                 self.main_input_widget.setFocus()
+        elif event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_C and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                if self.thread:
+                    self.thread.stop()
         return super().eventFilter(obj, event)
         
     def on_enter(self, user_input):
         if not user_input:
-            return " "
+            return True, ""
         
         parts = user_input.split()
         index = 0
         while(index < len(parts) and not(parts[index])):
             index += 1
         if index == len(parts):
-            return " "
+            return True, ""
         
         if parts[index] == "git":
             second_index = index + 1
@@ -118,29 +122,29 @@ class BashWindow(QMainWindow):
                 
             if second_index == len(parts):
                 self.run_commend(user_input)
-                return None
+                return False, ""
             
-            if parts[second_index] in GIT_PROGRESS_LIST:
+            if parts[second_index].lower() in GIT_PROGRESS_LIST:
                 self.run_commend(user_input + " --progress")
-                return None
+                return False, ""
             
             self.run_commend(user_input)
-            return None
+            return False, ""
         
         if parts[index] != "cd":
             self.run_commend(user_input)
-            return None
+            return False, ""
         
         if len(parts) <= 1:  
-            return f"bash: cd: {parts[1]}: No such file or directory"  
+            return True, f"bash: cd: {parts[1]}: No such file or directory"  
         
         try:
             os.chdir(parts[1])
             self.path = os.getcwd()
-            return " "
+            return True, ""
         
         except FileNotFoundError:
-            return f"bash: cd: {parts[1]}: No such file or directory"   
+            return True, f"bash: cd: {parts[1]}: No such file or directory"   
         
     def on_update(self):
         last_item = self.chat_list.item(self.chat_list.count() - 1)
@@ -182,8 +186,6 @@ class BashWindow(QMainWindow):
         if self.pointer_index == self.chat_list.count():
             text = ""  
         self.main_input_widget.setText(text)
-        
-
         
     def run_commend(self, user_input):
         self.command_text_lines = [""]

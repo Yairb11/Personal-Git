@@ -53,8 +53,8 @@ class MessageBlock(QFrame):
         user_input = self.user_input_widget.text()
         answer_text = None
         if self.enter_callback:
-            answer_text = self.enter_callback(user_input)  
-        if answer_text:
+            immediate_response, answer_text = self.enter_callback(user_input)  
+        if immediate_response:
             self.answer_lbl.setText(answer_text)
             if self.update_callback:
                 self.update_callback()

@@ -10,9 +10,11 @@ class SubprocessThread(QThread):
     def __init__(self, command):
         super().__init__()
         self.command = command
+        self.process = None
+        self.is_stoped = False
 
     def run(self):
-        process = subprocess.Popen(
+        self.process = subprocess.Popen(
             self.command,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -25,9 +27,9 @@ class SubprocessThread(QThread):
         )
         
         buffer = ""
-        while True:
-            char = process.stdout.read(1)
-            if not char and process.poll() is not None:
+        while not self.is_stoped:
+            char = self.process.stdout.read(1)
+            if not char and self.process.poll() is not None:
                 if buffer:
                     self.text_update.emit(buffer, False)
                 break
@@ -41,5 +43,10 @@ class SubprocessThread(QThread):
             else:
                 buffer += char
                    
-        process.stdout.close()
-        process.wait()
+        self.process.stdout.close()
+        self.process.wait()
+        
+    def stop(self):
+        self.is_stoped = True
+        if self.process:
+            self.process.terminate()
