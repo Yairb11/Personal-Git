@@ -14,7 +14,16 @@ PROGRESS_BAR_REGEX = r'^([a-zA-Z\s]+:)'
 GIT_PROGRESS_LIST = ["clone", "fetch", "pull", "push", "bundle", "pack-object"]
 
 class BashWindow(QMainWindow):
+    """Application window with all of the widgets and functions
+    """
     def __init__(self, bash_path, user_name, computer_name):
+        """Initiates all the widgets and variables, and the main window
+
+        Args:
+            bash_path (string): bash.exe path location
+            user_name (string): name of the user
+            computer_name (string): system name
+        """
         super().__init__()
         os.chdir(os.path.expanduser("~"))
         self.path = os.getcwd()
@@ -46,6 +55,9 @@ class BashWindow(QMainWindow):
         self.add_message()
         
     def add_message(self):
+        """Addes new MessageBlock to QListWidget to continue the CLI application,
+        it gets all the infirmation needed for the new MessageBlock and in the end restarts main view of main application
+        """
         path_split = self.path.split(self.users_home_path)
         if(len(path_split) == 1):
             path_linux = self.path
@@ -70,6 +82,12 @@ class BashWindow(QMainWindow):
         self.pointer_index = self.chat_list.count()
     
     def get_git_status(self):
+        """Gets git branch name if it exist at all in this folder location, 
+        this is for the MessageBlock
+
+        Returns:
+            list: bool-> there is branch name, string->branch name
+        """
         try:
             subprocess.run(
                 ["git", "-C", self.path, "rev-parse", "--is-inside-work-tree"],
@@ -94,6 +112,9 @@ class BashWindow(QMainWindow):
             return [False, None]
       
     def eventFilter(self, obj, event):
+        """Checks every event in the main application for some important functionality like
+        focus, copying and ending process  
+        """
         if event.type() == QEvent.Type.MouseButtonPress:
             if event.button() == Qt.MouseButton.LeftButton:
                 self.main_input_widget.setFocus()
@@ -122,6 +143,15 @@ class BashWindow(QMainWindow):
         return super().eventFilter(obj, event)
         
     def on_enter(self, user_input):
+        """Gets users input and executes it like it should be in CLI
+
+        Args:
+            user_input (string): users input
+
+        Returns:
+            bool: is the execution was immediate, and not run thread with subprocess
+            string: output of the CLI if exist already
+        """
         if not user_input:
             return True, ""
         
@@ -161,6 +191,9 @@ class BashWindow(QMainWindow):
             return True, f"bash: cd: {parts[1]}: No such file or directory"   
         
     def on_update(self):
+        """Updates the main application widgets after finishing users task,
+        in the end creating new message input
+        """
         self.thread = None
         last_item = self.chat_list.item(self.chat_list.count() - 1)
         last_item.resize()
@@ -168,6 +201,11 @@ class BashWindow(QMainWindow):
         self.add_message()
         
     def on_path_search(self):
+        """Creates QFileDialog for the user to find his targeted folder
+
+        Returns:
+            string: folder path
+        """
         file_path = QFileDialog.getExistingDirectory(
             self,
             "Select Target Folder",
@@ -179,11 +217,18 @@ class BashWindow(QMainWindow):
         return ""
     
     def on_link_search(self):
+        """Creates GithubBrowserWindow for the user to find his targeted .git link
+        """
         self.main_input_widget.setEnabled(False)
         self.browser_window = GithubBrowserWindow(link_found_callback=self.on_found_link)
         self.browser_window.show()
 
     def on_found_link(self, link):
+        """When targeted .git link is found, it updates the widgets
+
+        Args:
+            link (string): targeted .git link
+        """
         user_input = self.main_input_widget.text()
         if len(user_input) >= 1 and user_input[-1] != " ":
             self.main_input_widget.setText(f"{user_input} {link}")
@@ -193,6 +238,11 @@ class BashWindow(QMainWindow):
         self.main_input_widget.setFocus()
         
     def on_pointing(self, change):
+        """Gets user history from the messaging system using keyboard arrows
+
+        Args:
+            change (number): jump to history position
+        """
         if self.pointer_index + change > self.chat_list.count() or self.pointer_index + change <= 0:
             return 
         
@@ -205,6 +255,11 @@ class BashWindow(QMainWindow):
         self.chat_list.scrollToBottom()
         
     def run_commend(self, user_input):
+        """Creates thread to run users input command
+
+        Args:
+            user_input (string): users input command
+        """
         self.command_text_lines = [""]
         self.thread = SubprocessThread([self.bash_path, "-c", user_input])
         self.thread.text_update.connect(self.append_text)
@@ -212,6 +267,12 @@ class BashWindow(QMainWindow):
         self.thread.start()
         
     def append_text(self, text, overwrite_last):
+        """Runs with created thread to update widgets so it would be fast and stream like for the UX
+
+        Args:
+            text (string): line added or changed by the subprocess
+            overwrite_last (bool): if the new line is for overwriting last line or not
+        """
         clean_text = text.strip()
         if not clean_text:
             return
@@ -238,6 +299,7 @@ class BashWindow(QMainWindow):
         self.chat_list.scrollToBottom()
             
     def read_settings(self):
+        """Read and changes window state and geometry from last use"""
         geometry = self.settings.value("geometry")
         window_state = self.settings.value("windowState")
         if geometry:
@@ -246,9 +308,11 @@ class BashWindow(QMainWindow):
             self.restoreState(window_state)
 
     def write_settings(self):
+        """Saves window state and geometry of the application"""
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("windowState", self.saveState())
 
     def closeEvent(self, event):
+        """On closing application"""
         self.write_settings()
         super().closeEvent(event)

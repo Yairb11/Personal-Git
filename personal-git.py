@@ -9,6 +9,14 @@ import winreg
 CREATE_NO_WINDOW = 0x08000000
 
 def is_valid_bash(bash_path):
+    """Checks if bash.exe path is valid and working
+
+    Args:
+        bash_path (string): bash.exe path
+
+    Returns:
+        bool: if valid
+    """
     if not bash_path or not os.path.exists(bash_path):
         return False
     try:
@@ -24,6 +32,11 @@ def is_valid_bash(bash_path):
         return False
 
 def find_bash_universally():
+    """Finds loaction of bash.exe file that would work on users computer
+
+    Returns:
+        string: location or if didnt find, None
+    """
     path_from_which = shutil.which("bash")
     if is_valid_bash(path_from_which):
         return path_from_which
@@ -55,15 +68,23 @@ def find_bash_universally():
                 potential_bash = os.path.join(dirpath, "bash.exe")
                 if is_valid_bash(potential_bash):
                     return potential_bash
-    return None
+    return
 
 if __name__ == "__main__":
+    """Runs the program and application
+
+    Raises:
+        ValueError: If didnty find bash.exe working file on users computers
+    """
     bash_path = find_bash_universally()
-    user_name = getpass.getuser()
-    computer_name = os.environ.get('COMPUTERNAME')
-    desktop_app = QtWidgets.QApplication(sys.argv)
-    window = BashWindow(bash_path, user_name, computer_name)
- 
-    window.show()
-    sys.exit(desktop_app.exec())
+    if bash_path:
+        user_name = getpass.getuser()
+        computer_name = os.environ.get('COMPUTERNAME')
+        desktop_app = QtWidgets.QApplication(sys.argv)
+        window = BashWindow(bash_path, user_name, computer_name)
+    
+        window.show()
+        sys.exit(desktop_app.exec())
+    else:
+        raise ValueError("Couldnt find working bash.exe file on your computer")
  
