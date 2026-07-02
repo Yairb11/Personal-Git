@@ -23,7 +23,5 @@ class KeyLineEdit(QLineEdit):
             self.pointing_callback(-1)
         elif key == Qt.Key.Key_Down:
             self.pointing_callback(1)
-        
-        if not is_ctrl_pressed:
-            super().keyPressEvent(event)
+        super().keyPressEvent(event)
         

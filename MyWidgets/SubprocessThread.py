@@ -1,10 +1,8 @@
-import sys
 import subprocess
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPlainTextEdit, QVBoxLayout, QWidget, QPushButton
 from PyQt6.QtCore import QThread, pyqtSignal
-from PyQt6.QtGui import QTextCursor
 
 CREATE_NO_WINDOW = 0x08000000
+
 class SubprocessThread(QThread):
     text_update = pyqtSignal(str, bool)
     def __init__(self, command):

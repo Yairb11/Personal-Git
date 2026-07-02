@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets  import  (QLabel, QFrame, QHBoxLayout, QVBoxLayout, QPlainTextEdit)
+from PyQt6.QtWidgets  import  (QLabel, QFrame, QHBoxLayout, QVBoxLayout)
 from PyQt6.QtCore import Qt
-from MyWidgets.KeyLineEdit import *
+from MyWidgets.KeyLineEdit import KeyLineEdit
 
 class MessageBlock(QFrame):
     def __init__(self, header, path, git, enter_callback = None, update_callback = None, path_search_callback = None, link_search_callback = None, pointing_callback = None):
@@ -49,7 +49,7 @@ class MessageBlock(QFrame):
         
     
     def finish_input(self):
-        self.user_input_widget.setEnabled(False)
+        self.user_input_widget.setReadOnly(False)
         user_input = self.user_input_widget.text()
         answer_text = None
         if self.enter_callback:

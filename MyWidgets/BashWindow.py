@@ -1,12 +1,11 @@
 
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QAbstractItemView, 
-                             QFileDialog, QListWidget, QListWidgetItem, QInputDialog, QApplication)
+                             QFileDialog, QListWidget, QApplication)
 from PyQt6.QtCore import QSettings, Qt, QEvent
-from PyQt6.QtGui import QIcon, QTextCursor
-from MyWidgets.MessageBlock import *
-from MyWidgets.GithubBrowserWindow import *
-from MyWidgets.MessageListWidgetItem import *
-from MyWidgets.SubprocessThread import *
+from MyWidgets.MessageBlock import MessageBlock
+from MyWidgets.GithubBrowserWindow import GithubBrowserWindow
+from MyWidgets.MessageListWidgetItem import MessageListWidgetItem
+from MyWidgets.SubprocessThread import SubprocessThread
 import subprocess
 import os
 import re
@@ -102,6 +101,24 @@ class BashWindow(QMainWindow):
             if event.key() == Qt.Key.Key_C and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 if self.thread:
                     self.thread.stop()
+                else:
+                    selected_widget = None
+                    for i in range(self.chat_list.count() - 1):
+                        item = self.chat_list.item(i)
+                        if item.get_input_widget().hasSelectedText():
+                            selected_widget = item.get_input_widget()
+                            QApplication.clipboard().setText(selected_widget.selectedText())
+                            selected_widget.deselect()
+                            break
+                        elif item.get_answer_widget().hasSelectedText():
+                            selected_widget = item.get_answer_widget()
+                            QApplication.clipboard().setText(selected_widget.selectedText())
+                            selected_widget.setSelection(0, 0)
+                            break
+                    if selected_widget is None:
+                        return super().eventFilter(obj, event)                    
+                    return True
+                    
         return super().eventFilter(obj, event)
         
     def on_enter(self, user_input):
@@ -135,11 +152,8 @@ class BashWindow(QMainWindow):
             self.run_commend(user_input)
             return False, ""
         
-        if len(parts) <= 1:  
-            return True, f"bash: cd: {parts[1]}: No such file or directory"  
-        
         try:
-            os.chdir(parts[1])
+            os.chdir(parts[1] if len(parts) > 1 else os.path.expanduser("~"))
             self.path = os.getcwd()
             return True, ""
         
@@ -147,8 +161,10 @@ class BashWindow(QMainWindow):
             return True, f"bash: cd: {parts[1]}: No such file or directory"   
         
     def on_update(self):
+        self.thread = None
         last_item = self.chat_list.item(self.chat_list.count() - 1)
         last_item.resize()
+        last_item.get_answer_widget().setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.add_message()
         
     def on_path_search(self):
@@ -186,6 +202,7 @@ class BashWindow(QMainWindow):
         if self.pointer_index == self.chat_list.count():
             text = ""  
         self.main_input_widget.setText(text)
+        self.chat_list.scrollToBottom()
         
     def run_commend(self, user_input):
         self.command_text_lines = [""]
@@ -218,9 +235,8 @@ class BashWindow(QMainWindow):
 
         answer_lbl.setText('\n'.join(self.command_text_lines))
         last_item.resize() 
+        self.chat_list.scrollToBottom()
             
-        
-    
     def read_settings(self):
         geometry = self.settings.value("geometry")
         window_state = self.settings.value("windowState")
@@ -236,4 +252,3 @@ class BashWindow(QMainWindow):
     def closeEvent(self, event):
         self.write_settings()
         super().closeEvent(event)
-
