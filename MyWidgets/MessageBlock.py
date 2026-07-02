@@ -1,14 +1,15 @@
-from PyQt6.QtWidgets  import  (QLabel, QFrame, QHBoxLayout, QVBoxLayout, QLineEdit)
+from PyQt6.QtWidgets  import  (QLabel, QFrame, QHBoxLayout, QVBoxLayout, QPlainTextEdit)
 from PyQt6.QtCore import Qt
 from MyWidgets.KeyLineEdit import *
 
 class MessageBlock(QFrame):
-    def __init__(self, header, path, git, enter_callback = None, update_callback = None, path_search_callback = None, link_search_callback = None):
+    def __init__(self, header, path, git, enter_callback = None, update_callback = None, path_search_callback = None, link_search_callback = None, pointing_callback = None):
         super().__init__()
         self.enter_callback = enter_callback
         self.update_callback = update_callback
         self.path_search_callback = path_search_callback
         self.link_search_callback = link_search_callback
+        self.pointing_callback = pointing_callback
         self.u_input = ""
         
         layout = QVBoxLayout()
@@ -34,7 +35,8 @@ class MessageBlock(QFrame):
         start_lbl = QLabel(">")
         self.user_input_widget = KeyLineEdit(enter_callback=self.finish_input, 
                                             path_search_callback=self.writing_path, 
-                                            link_search_callback=self.link_search_callback)
+                                            link_search_callback=self.link_search_callback,
+                                            pointing_callback=self.pointing_callback)
         self.user_input_widget.setFrame(False)
         user_input_layout.addWidget(start_lbl)
         user_input_layout.addWidget(self.user_input_widget)
@@ -49,11 +51,13 @@ class MessageBlock(QFrame):
     def finish_input(self):
         self.user_input_widget.setEnabled(False)
         user_input = self.user_input_widget.text()
+        answer_text = None
         if self.enter_callback:
-            answer_text = self.enter_callback(user_input, self.answer_lbl, self)
+            answer_text = self.enter_callback(user_input)  
+        if answer_text:
             self.answer_lbl.setText(answer_text)
-        if self.update_callback:
-            self.update_callback(self)
+            if self.update_callback:
+                self.update_callback()
 
     
     def writing_path(self):

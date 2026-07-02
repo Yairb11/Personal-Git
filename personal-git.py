@@ -5,7 +5,7 @@ from MyWidgets.BashWindow import *
 import getpass
 import os
 
-BASH_PATH = r"YOUR bash.exe PATH"
+BASH_PATH = r"X:\gitlab\Git\usr\bin\bash.EXE"
 
 if __name__ == "__main__":
     user_name = getpass.getuser()
