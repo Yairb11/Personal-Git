@@ -5,7 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pyinstaller>=6.21.0",
-    "pyqt6>=6.11.0",
-    "pyqt6-webengine>=6.11.0",
+    "altgraph==0.17.5",
+    "packaging==26.2",
+    "pefile==2024.8.26",
+    "pyinstaller==6.21.0",
+    "pyinstaller-hooks-contrib==2026.6",
+    "pyqt6==6.11.0",
+    "pyqt6-qt6==6.11.1",
+    "pyqt6-sip==13.11.1",
+    "pyqt6-webengine==6.11.0",
+    "pyqt6-webengine-qt6==6.11.1",
+    "pywin32-ctypes==0.2.3",
+    "setuptools==82.0.1",
 ]
