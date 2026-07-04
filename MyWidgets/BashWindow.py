@@ -213,7 +213,7 @@ class BashWindow(QMainWindow):
         )
         if file_path:
             normalized_path = os.path.normpath(file_path)
-            new_path_cut = normalized_path.split(self.path)
+            new_path_cut = normalized_path.split(f"{self.path}\\")
             if (new_path_cut[0] and len(new_path_cut) == 1) or (len(new_path_cut) > 2):
                 return normalized_path
             return new_path_cut[1]
